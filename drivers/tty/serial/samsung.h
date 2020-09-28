@@ -10,6 +10,7 @@
 */
 
 #include <linux/dmaengine.h>
+#include <linux/reset.h>
 
 struct s3c24xx_uart_info {
 	char			*name;
@@ -29,6 +30,7 @@ struct s3c24xx_uart_info {
 	/* uart port features */
 
 	unsigned int		has_divslot:1;
+	unsigned int		has_reset_control:1;
 
 	/* uart controls */
 	int (*reset_port)(struct uart_port *, struct s3c2410_uartcfg *);
