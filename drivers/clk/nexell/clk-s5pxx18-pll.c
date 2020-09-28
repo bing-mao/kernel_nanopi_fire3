@@ -744,7 +744,7 @@ static void __init clk_pll_of_clocks_setup(struct device_node *node)
 {
 	struct clk_core *clk_data = NULL;
 	struct clk *clk;
-	unsigned long flags = CLK_IS_BASIC;
+	unsigned long flags = 0; //CLK_IS_BASIC;
 	const char *parent_name = NULL;
 	int i, div, pll;
 

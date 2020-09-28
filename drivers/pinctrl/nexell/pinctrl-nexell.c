@@ -879,12 +879,12 @@ static int nx_gpio_request(struct gpio_chip *gc, unsigned offset)
 
 	nx_soc_gpio_set_io_func(io, fn);
 
-	return pinctrl_request_gpio(gc->base + offset);
+	return pinctrl_gpio_request(gc->base + offset);
 }
 
 static void nx_gpio_free(struct gpio_chip *gc, unsigned offset)
 {
-	pinctrl_free_gpio(gc->base + offset);
+	pinctrl_gpio_free(gc->base + offset);
 }
 
 static const struct gpio_chip nexell_gpiolib_chip = {

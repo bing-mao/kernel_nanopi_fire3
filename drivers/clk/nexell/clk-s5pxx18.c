@@ -560,7 +560,7 @@ static void __init clk_dev_of_setup(struct device_node *node)
 
 		if (peri[i].parent_name) {
 			ops = &clk_empty_ops;
-			flags = CLK_IS_BASIC;
+			//flags = CLK_IS_BASIC;
 #ifdef CONFIG_ARM_NEXELL_CPUFREQ
 			if (!strcmp(pll, peri[i].parent_name))
 				flags |= CLK_SET_RATE_PARENT;

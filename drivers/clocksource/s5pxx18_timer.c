@@ -495,4 +495,4 @@ static int __init timer_of_init_dt(struct device_node *node)
     return 0;
 }
 
-CLOCKSOURCE_OF_DECLARE(s5p6818, "nexell,s5p6818-timer", timer_of_init_dt);
+TIMER_OF_DECLARE(s5p6818, "nexell,s5p6818-timer", timer_of_init_dt);
