@@ -127,6 +127,8 @@ struct stmmac_txq_cfg {
 	u32 prio;
 };
 
+struct ethtool_wolinfo;
+
 struct plat_stmmacenet_data {
 	int bus_id;
 	int phy_addr;
@@ -179,5 +181,7 @@ struct plat_stmmacenet_data {
 	int mac_port_sel_speed;
 	bool en_tx_lpi_clockgating;
 	int has_xgmac;
+	void (*get_wol)(struct net_device *, struct ethtool_wolinfo *);
+	int (*set_wol)(struct net_device *, struct ethtool_wolinfo *);
 };
 #endif

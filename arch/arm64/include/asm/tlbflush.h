@@ -146,29 +146,46 @@ static inline void flush_tlb_all(void)
 
 static inline void flush_tlb_mm(struct mm_struct *mm)
 {
+	/* FIXME: temporary turnaround code to resolve tlb flush by ASID BUG.
+	 * We assume the cause of this issue is synchronization between cpu
+	 * clusters. This issue must be resolved in BL1~BL3 layer not here.
+	 * This patch will be removed afterwards.
+	 */
+#if defined (CONFIG_SMP) && defined (CONFIG_ARCH_S5P6818)
+	flush_tlb_all();
+#else
 	unsigned long asid = __TLBI_VADDR(0, ASID(mm));
 
 	dsb(ishst);
 	__tlbi(aside1is, asid);
 	__tlbi_user(aside1is, asid);
 	dsb(ish);
+#endif
 }
 
 static inline void flush_tlb_page_nosync(struct vm_area_struct *vma,
 					 unsigned long uaddr)
 {
+#ifdef CONFIG_ARM64_WORKAROUND_CCI400_DVMV7
+	flush_tlb_all();
+#else
 	unsigned long addr = __TLBI_VADDR(uaddr, ASID(vma->vm_mm));
 
 	dsb(ishst);
 	__tlbi(vale1is, addr);
 	__tlbi_user(vale1is, addr);
+#endif
 }
 
 static inline void flush_tlb_page(struct vm_area_struct *vma,
 				  unsigned long uaddr)
 {
+#ifdef CONFIG_ARM64_WORKAROUND_CCI400_DVMV7
+        flush_tlb_all();
+#else
 	flush_tlb_page_nosync(vma, uaddr);
 	dsb(ish);
+#endif
 }
 
 /*
@@ -181,6 +198,9 @@ static inline void __flush_tlb_range(struct vm_area_struct *vma,
 				     unsigned long start, unsigned long end,
 				     unsigned long stride, bool last_level)
 {
+#ifdef CONFIG_ARM64_WORKAROUND_CCI400_DVMV7
+	flush_tlb_mm(vma->vm_mm);
+#else
 	unsigned long asid = ASID(vma->vm_mm);
 	unsigned long addr;
 
@@ -209,6 +229,7 @@ static inline void __flush_tlb_range(struct vm_area_struct *vma,
 		}
 	}
 	dsb(ish);
+#endif
 }
 
 static inline void flush_tlb_range(struct vm_area_struct *vma,
@@ -223,6 +244,9 @@ static inline void flush_tlb_range(struct vm_area_struct *vma,
 
 static inline void flush_tlb_kernel_range(unsigned long start, unsigned long end)
 {
+#ifdef CONFIG_ARM64_WORKAROUND_CCI400_DVMV7
+	flush_tlb_all();
+#else
 	unsigned long addr;
 
 	if ((end - start) > (MAX_TLBI_OPS * PAGE_SIZE)) {
@@ -238,6 +262,7 @@ static inline void flush_tlb_kernel_range(unsigned long start, unsigned long end
 		__tlbi(vaale1is, addr);
 	dsb(ish);
 	isb();
+#endif
 }
 
 /*
@@ -246,12 +271,16 @@ static inline void flush_tlb_kernel_range(unsigned long start, unsigned long end
  */
 static inline void __flush_tlb_kernel_pgtable(unsigned long kaddr)
 {
+#ifdef CONFIG_ARM64_WORKAROUND_CCI400_DVMV7
+	flush_tlb_all();
+#else
 	unsigned long addr = __TLBI_VADDR(kaddr, 0);
 
 	dsb(ishst);
 	__tlbi(vaae1is, addr);
 	dsb(ish);
 	isb();
+#endif
 }
 #endif
 

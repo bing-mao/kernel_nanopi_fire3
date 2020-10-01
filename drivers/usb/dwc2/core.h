@@ -1163,6 +1163,7 @@ struct dwc2_hsotg {
 	struct kmem_cache *desc_gen_cache;
 	struct kmem_cache *desc_hsisoc_cache;
 	struct kmem_cache *unaligned_cache;
+	u32 ext_vbus_io;
 #define DWC2_KMEM_UNALIGNED_BUF_SIZE 1024
 
 #endif /* CONFIG_USB_DWC2_HOST || CONFIG_USB_DWC2_DUAL_ROLE */

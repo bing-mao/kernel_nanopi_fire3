@@ -175,6 +175,15 @@ config REGULATOR_AXP20X
 	  This driver provides support for the voltage regulators on the
 	  AXP20X PMIC.
 
+config REGULATOR_AXP228
+	tristate "X-Powers AXP228 Power regulator"
+	select MFD_AXP228
+	help
+	  This driver supports regulator driver for the X-Powers AXP228
+	  Power Management device.
+	  It delivers digitally programmable output,
+	  the voltage is programmed via I2C interface.
+
 config REGULATOR_BCM590XX
 	tristate "Broadcom BCM590xx PMU Regulators"
 	depends on MFD_BCM590XX
@@ -890,6 +899,12 @@ config REGULATOR_STPMIC1
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called stpmic1_regulator.
+
+config REGULATOR_SPU1705
+	tristate "FriendlyElec SPU1705 regulator driver"
+	depends on I2C
+	help
+	  Say Y here to support the voltage regulators on SPU1705
 
 config REGULATOR_TI_ABB
 	tristate "TI Adaptive Body Bias on-chip LDO"
