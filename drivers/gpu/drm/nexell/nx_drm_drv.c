@@ -18,6 +18,7 @@
 #include <drm/drmP.h>
 #include <drm/drm_crtc_helper.h>
 #include <drm/drm_fb_helper.h>
+#include <drm/drm_probe_helper.h>
 #include <linux/of_platform.h>
 #include <linux/component.h>
 
@@ -144,7 +145,7 @@ static void nx_drm_postclose(struct drm_device *drm, struct drm_file *file)
 
 static struct drm_driver nx_drm_driver = {
 	.driver_features = DRIVER_HAVE_IRQ | DRIVER_MODESET |
-		DRIVER_GEM | DRIVER_PRIME | DRIVER_IRQ_SHARED,
+		DRIVER_GEM,
 	.fops = &nx_drm_fops,	/* replace fops */
 	.lastclose = nx_drm_lastclose,
 	.postclose = nx_drm_postclose,
@@ -238,7 +239,7 @@ err_mode_config_cleanup:
 	drm_mode_config_cleanup(drm);
 	kfree(priv);
 err_free_drm:
-	drm_dev_unref(drm);
+	drm_dev_put(drm);
 
 	return ret;
 }
@@ -277,7 +278,7 @@ static int match_drv(struct device_driver *drv, void *data)
 }
 #endif
 
-static int match_component(struct device *dev, void *data)
+static int match_component(struct device *dev, const void *data)
 {
 	const char *name = data;
 	const char *t = name, *f = dev_name(dev);

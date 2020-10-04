@@ -17,6 +17,7 @@
  */
 #include <drm/drmP.h>
 #include <drm/drm_crtc_helper.h>
+#include <drm/drm_probe_helper.h>
 
 #include "nx_drm_drv.h"
 #include "nx_drm_connector.h"
@@ -220,7 +221,7 @@ struct drm_connector *nx_drm_connector_create_and_attach(
 		goto err_encoder;
 
 	//connector->encoder = encoder;
-	err = drm_mode_connector_attach_encoder(connector, encoder);
+	err = drm_connector_attach_encoder(connector, encoder);
 	if (err) {
 		DRM_ERROR("fail : attach a connector to a encoder\n");
 		goto err_connector;

@@ -18,6 +18,7 @@
 #include <drm/drmP.h>
 #include <drm/drm_crtc_helper.h>
 #include <drm/drm_edid.h>
+#include <drm/drm_probe_helper.h>
 
 #include <linux/wait.h>
 #include <linux/spinlock.h>
@@ -197,7 +198,7 @@ static int panel_hdmi_get_modes(struct device *dev,
 			(hdmi->dvi_mode ? "dvi monitor" : "hdmi monitor"),
 			edid->width_cm, edid->height_cm);
 
-		drm_mode_connector_update_edid_property(connector, edid);
+		drm_connector_update_edid_property(connector, edid);
 		num_modes = drm_add_edid_modes(connector, edid);
 		panel_hdmi_dump_edid_modes(connector, num_modes, false);
 	}

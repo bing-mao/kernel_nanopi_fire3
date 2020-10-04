@@ -857,7 +857,7 @@ int nx_drm_dp_plane_update(struct drm_plane *plane,
 	nx_plane = to_nx_plane(plane);
 	layer = &nx_plane->layer;
 	type = layer->type;
-	num_planes = drm_format_num_planes(fb->format->format);
+	num_planes = fb->format->num_planes; //drm_format_num_planes(fb->format->format);
 
 	DRM_DEBUG_KMS("crtc.%d plane.%d (%s) : planes %d\n",
 		layer->module, layer->num, layer->name, num_planes);

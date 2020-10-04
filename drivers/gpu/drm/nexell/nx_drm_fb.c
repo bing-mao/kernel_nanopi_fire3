@@ -41,7 +41,7 @@ static void nx_drm_fb_destroy(struct drm_framebuffer *fb)
 
 	for (i = 0; i < 4; i++) {
 		if (nx_fb->obj[i])
-			drm_gem_object_unreference_unlocked(
+			drm_gem_object_put_unlocked(
 					&nx_fb->obj[i]->base);
 	}
 
@@ -119,17 +119,14 @@ static struct drm_framebuffer *nx_drm_fb_create(struct drm_device *drm,
 	struct nx_drm_fb *nx_fb;
 	struct nx_gem_object *nx_objs[4];
 	struct drm_gem_object *obj;
-	unsigned int hsub;
-	unsigned int vsub;
 	int ret;
 	int i;
 
-	hsub = drm_format_horz_chroma_subsampling(mode_cmd->pixel_format);
-	vsub = drm_format_vert_chroma_subsampling(mode_cmd->pixel_format);
+    const struct drm_format_info *info = drm_get_format_info(drm, mode_cmd);
 
-	for (i = 0; i < drm_format_num_planes(mode_cmd->pixel_format); i++) {
-		unsigned int width = mode_cmd->width / (i ? hsub : 1);
-		unsigned int height = mode_cmd->height / (i ? vsub : 1);
+	for (i = 0; i < info->num_planes; i++) {
+		unsigned int width = mode_cmd->width / (i ? info->hsub : 1);
+		unsigned int height = mode_cmd->height / (i ? info->vsub : 1);
 		unsigned int min_size;
 
 		obj = drm_gem_object_lookup(file_priv,
@@ -142,11 +139,11 @@ static struct drm_framebuffer *nx_drm_fb_create(struct drm_device *drm,
 
 		min_size = (height - 1) * mode_cmd->pitches[i]
 			+ width
-			* drm_format_plane_cpp(mode_cmd->pixel_format, i)
+			* info->cpp[i]
 			+ mode_cmd->offsets[i];
 
 		if (obj->size < min_size) {
-			drm_gem_object_unreference_unlocked(obj);
+			drm_gem_object_put_unlocked(obj);
 			ret = -EINVAL;
 			goto err_gem_object_unreference;
 		}
@@ -163,7 +160,7 @@ static struct drm_framebuffer *nx_drm_fb_create(struct drm_device *drm,
 
 err_gem_object_unreference:
 	for (i--; i >= 0; i--)
-		drm_gem_object_unreference_unlocked(&nx_objs[i]->base);
+		drm_gem_object_put_unlocked(&nx_objs[i]->base);
 
 	return ERR_PTR(ret);
 }
@@ -261,7 +258,6 @@ static int nx_drm_fb_helper_probe(struct drm_fb_helper *fb_helper,
 	fb_helper->fb = fb;
 	fb_helper->fbdev = info;
 
-	info->par = fb_helper;
 	info->flags = FBINFO_FLAG_DEFAULT;
 	info->fbops = &nx_fb_ops;
 
@@ -271,9 +267,7 @@ static int nx_drm_fb_helper_probe(struct drm_fb_helper *fb_helper,
 		goto err_drm_fb_destroy;
 	}
 
-	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->format->depth);
-	drm_fb_helper_fill_var(info, fb_helper,
-			sizes->fb_width, sizes->fb_height);
+	drm_fb_helper_fill_info(info, fb_helper, sizes);
 
 	/* for double buffer */
 	info->var.yres_virtual = fb->height * buffers;
@@ -286,7 +280,7 @@ static int nx_drm_fb_helper_probe(struct drm_fb_helper *fb_helper,
 	info->fix.smem_start = (unsigned long)(nx_obj->dma_addr + offset);
 	info->screen_size = size;
 	info->fix.smem_len = size;
-
+#if 0
 	if (fb_helper->crtc_info &&
 		fb_helper->crtc_info->desired_mode) {
 		struct videomode vm;
@@ -301,7 +295,7 @@ static int nx_drm_fb_helper_probe(struct drm_fb_helper *fb_helper,
 		/* pico second */
 		info->var.pixclock = KHZ2PICOS(vm.pixelclock/1000);
 	}
-
+#endif
 	return 0;
 
 err_drm_fb_destroy:
@@ -379,12 +373,9 @@ static void nx_drm_fbdev_fini(struct nx_drm_fbdev *fbdev)
 {
 	if (fbdev->fb_helper.fbdev) {
 		struct fb_info *info;
-		int ret;
 
 		info = fbdev->fb_helper.fbdev;
-		ret = unregister_framebuffer(info);
-		if (ret < 0)
-			DRM_DEBUG_KMS("failed unregister_framebuffer()\n");
+		unregister_framebuffer(info);
 
 		if (info->cmap.len)
 			fb_dealloc_cmap(&info->cmap);
