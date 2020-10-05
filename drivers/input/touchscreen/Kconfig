@@ -1361,4 +1361,6 @@ config SENSOR_LOADER_1WIRE
 	  To compile this driver as a module, choose M here: the
 	  module will be called onewire-touch.
 
+source "drivers/input/touchscreen/friendlyelec/Kconfig"
+
 endif
