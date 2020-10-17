@@ -642,7 +642,7 @@ static struct timer_list one_wire_timer;
 
 static int timer_interval = HZ / 50;
 
-void one_wire_timer_proc(unsigned long v)
+void one_wire_timer_proc(struct timer_list *unused)
 {
 	unsigned char req;
 
@@ -781,8 +781,7 @@ static int ts_1wire_probe(struct platform_device *pdev)
 		goto free_pwm;
 	}
 
-	init_timer(&one_wire_timer);
-	one_wire_timer_proc(0);
+	timer_setup(&one_wire_timer, one_wire_timer_proc, 0);
 
 	return 0;
 
@@ -840,8 +839,7 @@ static int ts_1wire_resume(struct device *dev)
 	enable_irq(pdata->pwm_irq);
 	init_timer_for_1wire();
 
-	init_timer(&one_wire_timer);
-	one_wire_timer_proc(0);
+	timer_setup(&one_wire_timer, one_wire_timer_proc, 0);
 
 	return 0;
 }
